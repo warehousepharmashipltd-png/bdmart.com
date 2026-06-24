@@ -38,7 +38,8 @@ export interface Order {
   }[];
   totalAmount: number;
   paymentMethod: 'Cash on Delivery' | 'bKash' | 'Nagad';
-  paymentStatus: 'Pending' | 'Paid';
+  paymentStatus: 'Unpaid' | 'Paid' | 'Waiting';
+  courierName?: string;
   status: 'Pending' | 'Confirmed' | 'Shipped' | 'Delivered' | 'Cancelled';
   createdAt: string;
 }

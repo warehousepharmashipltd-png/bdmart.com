@@ -1,1 +1,185 @@
 @import "tailwindcss";
+
+/* ----------------- DARK THEME CORE OVERRIDES ----------------- */
+
+/* Base transition */
+html, body, #bd-mart-root, header, footer, main, select, input, button, div, section {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+/* Base body */
+.dark body {
+  background-color: #090d16 !important;
+  color: #f1f5f9 !important;
+}
+
+/* Root component */
+.dark #bd-mart-root,
+.dark .bg-gray-50,
+.dark .bg-slate-50,
+.dark main {
+  background-color: #090d16 !important;
+}
+
+/* Cards & Modals and Panels */
+.dark header,
+.dark footer,
+.dark .bg-white,
+.dark .bg-white\/95,
+.dark .bg-white\/80,
+.dark [role="dialog"],
+.dark .bg-slate-100\/10 {
+  background-color: #111827 !important; /* Dark charcoal/slate */
+  color: #f8fafc !important;
+}
+
+/* Border overrides */
+.dark .border,
+.dark .border-gray-100,
+.dark .border-slate-100,
+.dark .border-gray-200,
+.dark .border-slate-200,
+.dark .border-slate-150,
+.dark .divide-y > * + *,
+.dark .divide-gray-100 > * + * {
+  border-color: #1f2937 !important; /* Dark grey border */
+}
+
+/* Text color overrides */
+.dark .text-slate-900,
+.dark .text-gray-950,
+.dark .text-slate-950,
+.dark .text-gray-900,
+.dark .text-gray-800,
+.dark .text-slate-800,
+.dark .text-indigo-950,
+.dark h1,
+.dark h2,
+.dark h3,
+.dark h4,
+.dark h5,
+.dark h6 {
+  color: #f8fafc !important;
+}
+
+.dark .text-gray-700,
+.dark .text-slate-700,
+.dark .text-gray-600,
+.dark .text-slate-600 {
+  color: #cbd5e1 !important;
+}
+
+.dark .text-gray-500,
+.dark .text-slate-500,
+.dark .text-gray-400,
+.dark .text-slate-400,
+.dark .text-indigo-100/90,
+.dark .text-indigo-200 {
+  color: #94a3b8 !important;
+}
+
+/* Navigation category pills */
+.dark .bg-slate-100 {
+  background-color: #1f2937 !important;
+  color: #cbd5e1 !important;
+}
+
+.dark .hover\:bg-slate-200\/80:hover {
+  background-color: #374151 !important;
+  color: #f8fafc !important;
+}
+
+.dark .hover\:bg-slate-50:hover,
+.dark .hover\:bg-gray-50:hover,
+.dark .hover\:bg-indigo-50\/50:hover {
+  background-color: #1f2937 !important;
+}
+
+/* Inputs and Forms */
+.dark input,
+.dark select,
+.dark textarea {
+  background-color: #111827 !important;
+  color: #f8fafc !important;
+  border-color: #374151 !important;
+}
+
+.dark input:focus,
+.dark select:focus {
+  border-color: #6366f1 !important;
+  background-color: #111827 !important;
+}
+
+.dark input::placeholder {
+  color: #4b5563 !important;
+}
+
+/* Specific UI component improvements */
+.dark .bg-indigo-55,
+.dark .bg-indigo-50 {
+  background-color: #1e1b4b !important;
+  color: #c7d2fe !important;
+}
+
+.dark .text-indigo-600 {
+  color: #818cf8 !important;
+}
+
+.dark .border-indigo-100 {
+  border-color: #312e81 !important;
+}
+
+/* Cart Item / Product Grid Card styling in dark mode */
+.dark .bg-slate-50\/50,
+.dark .bg-gray-50\/50 {
+  background-color: #111827 !important;
+}
+
+/* Accent Buttons */
+.dark .bg-amber-400 {
+  background-color: #fbbf24 !important;
+  color: #0f172a !important;
+}
+
+.dark .bg-amber-400:hover {
+  background-color: #f59e0b !important;
+}
+
+/* Close drawer and dialog details */
+.dark button.text-gray-400:hover {
+  color: #f8fafc !important;
+  background-color: #1f2937 !important;
+}
+
+/* Tables styling */
+.dark table th {
+  background-color: #1f2937 !important;
+  color: #cbd5e1 !important;
+}
+
+.dark table tr:hover {
+  background-color: #111827 !important;
+}
+
+/* Shadow details */
+.dark .shadow-xs,
+.dark .shadow-md,
+.dark .shadow-lg,
+.dark .shadow-xl,
+.dark .shadow-2xl {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Slow spin animation for sun icon */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 12s linear infinite;
+}

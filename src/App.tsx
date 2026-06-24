@@ -52,6 +52,24 @@ export default function App() {
     return saved ? JSON.parse(saved) : [];
   });
 
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    return localStorage.getItem('bd_mart_theme') === 'dark';
+  });
+
+  useEffect(() => {
+    const root = document.getElementById('bd-mart-root');
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+      document.body.classList.add('dark');
+      root?.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      document.body.classList.remove('dark');
+      root?.classList.remove('dark');
+    }
+    localStorage.setItem('bd_mart_theme', isDarkMode ? 'dark' : 'light');
+  }, [isDarkMode]);
+
   // --- Filtering & Sorting States ---
   const [selectedCategory, setSelectedCategory] = useState<Category | 'All'>('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -72,6 +90,9 @@ export default function App() {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   // --- Office Settings States ---
+  const [promoMessage, setPromoMessage] = useState<string>(() => {
+    return localStorage.getItem('bdmart_promo_message') || '🌟 Eid Special Discount! Flat 10% off on local heritage items. Use Code: EID10';
+  });
   const [officeAddress, setOfficeAddress] = useState(() => {
     return localStorage.getItem('bdmart_office_address') || 'Level 4, Banani Super Market, Banani, Dhaka-1213';
   });
@@ -103,6 +124,23 @@ export default function App() {
       { username: defaultUser, password: defaultPass, role: 'Admin' }
     ];
   });
+  const [couriers, setCouriers] = useState<string[]>(() => {
+    const saved = localStorage.getItem('bdmart_couriers');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        // Fallback
+      }
+    }
+    return ['Pathao', 'Steadfast', 'Paperfly', 'SA Paribahan', 'Sundarban Courier'];
+  });
+
+  const handleUpdateCouriers = (newCouriers: string[]) => {
+    setCouriers(newCouriers);
+    localStorage.setItem('bdmart_couriers', JSON.stringify(newCouriers));
+    addToast('🚚 Courier partners database updated!', 'success');
+  };
 
   // Synchronize localStorage
   useEffect(() => {
@@ -232,7 +270,7 @@ export default function App() {
       })),
       totalAmount,
       paymentMethod: orderData.paymentMethod,
-      paymentStatus: orderData.paymentMethod === 'Cash on Delivery' ? 'Pending' : 'Paid',
+      paymentStatus: 'Unpaid',
       status: 'Pending',
       createdAt: new Date().toISOString()
     };
@@ -288,7 +326,8 @@ export default function App() {
   const handleUpdateOrderStatus = (
     orderId: string,
     status: Order['status'],
-    paymentStatus?: Order['paymentStatus']
+    paymentStatus?: Order['paymentStatus'],
+    courierName?: string
   ) => {
     setOrders((prev) =>
       prev.map((o) => {
@@ -296,7 +335,8 @@ export default function App() {
           return {
             ...o,
             status,
-            paymentStatus: paymentStatus || o.paymentStatus
+            paymentStatus: paymentStatus || o.paymentStatus,
+            courierName: courierName !== undefined ? courierName : o.courierName
           };
         }
         return o;
@@ -385,6 +425,12 @@ export default function App() {
           onAdminToggle={() => {}}
           onOrdersToggle={() => setOrdersOpen(true)}
           ordersCount={orders.length}
+          isDarkMode={isDarkMode}
+          onThemeToggle={() => {
+            setIsDarkMode(!isDarkMode);
+            addToast(`🌓 Switched to ${!isDarkMode ? 'Dark' : 'Light'} Mode`, 'info');
+          }}
+          promoMessage={promoMessage}
         />
       )}
 
@@ -406,6 +452,8 @@ export default function App() {
             bkashNumber={bkashNumber}
             nagadNumber={nagadNumber}
             adminAccounts={adminAccounts}
+            couriers={couriers}
+            promoMessage={promoMessage}
             onUpdateOfficeContact={(addr, ph, em) => {
               setOfficeAddress(addr);
               setOfficePhone(ph);
@@ -426,6 +474,12 @@ export default function App() {
               setAdminAccounts(accounts);
               localStorage.setItem('bdmart_admin_accounts', JSON.stringify(accounts));
               addToast('👤 Admin credentials & user accounts database synchronized!', 'success');
+            }}
+            onUpdateCouriers={handleUpdateCouriers}
+            onUpdatePromoMessage={(msg) => {
+              setPromoMessage(msg);
+              localStorage.setItem('bdmart_promo_message', msg);
+              addToast('📢 Announcement banner message updated!', 'success');
             }}
           />
         </main>

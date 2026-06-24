@@ -4,7 +4,7 @@
  */
 
 import { useState } from 'react';
-import { ShoppingCart, Search, Menu, X, Key, ShoppingBag, Info } from 'lucide-react';
+import { ShoppingCart, Search, Menu, X, Key, ShoppingBag, Info, Sun, Moon } from 'lucide-react';
 import { Category } from '../types';
 
 interface NavbarProps {
@@ -17,6 +17,9 @@ interface NavbarProps {
   onAdminToggle: () => void;
   onOrdersToggle: () => void;
   ordersCount: number;
+  isDarkMode: boolean;
+  onThemeToggle: () => void;
+  promoMessage: string;
 }
 
 export default function Navbar({
@@ -28,7 +31,10 @@ export default function Navbar({
   onSearchChange,
   onAdminToggle,
   onOrdersToggle,
-  ordersCount
+  ordersCount,
+  isDarkMode,
+  onThemeToggle,
+  promoMessage
 }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const categories: (Category | 'All')[] = ['All', 'Electronics', 'Apparel', 'Groceries', 'Home & Living', 'Cosmetics'];
@@ -37,8 +43,8 @@ export default function Navbar({
     <header id="main-header" className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-xs">
       {/* Promotion bar */}
       <div id="promo-banner" className="bg-slate-900 text-white text-xs px-4 py-1.5 text-center font-sans">
-        <div className="font-medium">
-          🌟 Eid Special Discount! Flat 10% off on local heritage items. Use Code: <span className="underline font-bold decoration-indigo-400 text-indigo-300">EID10</span>
+        <div className="font-medium animate-pulse-subtle">
+          {promoMessage}
         </div>
       </div>
 
@@ -102,6 +108,23 @@ export default function Navbar({
                 </p>
               </div>
             </div>
+
+            {/* Dark/Light mode toggle */}
+            <button
+              id="theme-toggle-btn"
+              onClick={onThemeToggle}
+              className="p-2 text-gray-600 hover:text-indigo-600 hover:bg-indigo-50/50 rounded-xl transition-all flex items-center gap-1 cursor-pointer"
+              title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            >
+              {isDarkMode ? (
+                <Sun className="w-5 h-5 text-amber-500 animate-spin-slow" />
+              ) : (
+                <Moon className="w-5 h-5 text-slate-700" />
+              )}
+              <span className="hidden sm:inline-block text-xs font-medium text-gray-600 hover:text-indigo-600">
+                {isDarkMode ? "Light" : "Dark"}
+              </span>
+            </button>
 
             {/* Orders Tracking button */}
             <button

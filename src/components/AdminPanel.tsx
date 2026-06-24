@@ -31,7 +31,8 @@ import {
   CheckSquare,
   Users,
   UserPlus,
-  Landmark
+  Landmark,
+  Megaphone
 } from 'lucide-react';
 import { Product, Order, Category, AdminAccount } from '../types';
 
@@ -43,7 +44,7 @@ interface AdminPanelProps {
   onAddProduct: (product: Product) => void;
   onUpdateProduct: (product: Product) => void;
   onDeleteProduct: (productId: string) => void;
-  onUpdateOrderStatus: (orderId: string, status: Order['status'], paymentStatus?: Order['paymentStatus']) => void;
+  onUpdateOrderStatus: (orderId: string, status: Order['status'], paymentStatus?: Order['paymentStatus'], courierName?: string) => void;
   onResetData: () => void;
   officeAddress: string;
   officePhone: string;
@@ -51,9 +52,13 @@ interface AdminPanelProps {
   bkashNumber: string;
   nagadNumber: string;
   adminAccounts: AdminAccount[];
+  couriers: string[];
+  promoMessage: string;
   onUpdateOfficeContact: (address: string, phone: string, email: string) => void;
   onUpdatePaymentNumbers: (bkash: string, nagad: string) => void;
   onUpdateAdminAccounts: (accounts: AdminAccount[]) => void;
+  onUpdateCouriers: (couriers: string[]) => void;
+  onUpdatePromoMessage: (message: string) => void;
 }
 
 export default function AdminPanel({
@@ -72,9 +77,13 @@ export default function AdminPanel({
   bkashNumber,
   nagadNumber,
   adminAccounts,
+  couriers,
+  promoMessage,
   onUpdateOfficeContact,
   onUpdatePaymentNumbers,
-  onUpdateAdminAccounts
+  onUpdateAdminAccounts,
+  onUpdateCouriers,
+  onUpdatePromoMessage
 }: AdminPanelProps) {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'inventory' | 'orders' | 'invoices' | 'settings'>('dashboard');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -766,14 +775,14 @@ export default function AdminPanel({
             const pendingOrders = orders.filter((o) => o.status === 'Pending');
             
             const handleAcceptOrder = (orderId: string) => {
-              onUpdateOrderStatus(orderId, 'Confirmed', 'Paid');
+              onUpdateOrderStatus(orderId, 'Confirmed', 'Unpaid');
             };
 
             const handleAcceptAll = () => {
               if (pendingOrders.length === 0) return;
               if (confirm(`Are you sure you want to accept all ${pendingOrders.length} pending orders?`)) {
                 pendingOrders.forEach((o) => {
-                  onUpdateOrderStatus(o.id, 'Confirmed', 'Paid');
+                  onUpdateOrderStatus(o.id, 'Confirmed', 'Unpaid');
                 });
               }
             };
@@ -914,7 +923,8 @@ export default function AdminPanel({
                         <div class="info-p"><strong>Support Email:</strong> ${officeEmail}</div>
                         <div class="info-p" style="margin-top: 10px; background-color: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #f1f5f9;">
                           <strong>Payment Method:</strong> ${order.paymentMethod}<br/>
-                          <strong>Payment Status:</strong> ${order.paymentStatus === 'Paid' ? 'PAID' : 'PENDING'}
+                          <strong>Payment Status:</strong> ${order.paymentStatus.toUpperCase()}<br/>
+                          ${order.courierName ? `<strong>Courier Partner:</strong> ${order.courierName}` : ''}
                         </div>
                       </div>
                     </div>
@@ -1038,7 +1048,8 @@ export default function AdminPanel({
                         <div class="info-p"><strong>Support Email:</strong> ${officeEmail}</div>
                         <div class="info-p" style="margin-top: 10px; background-color: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #f1f5f9;">
                           <strong>Payment Method:</strong> ${order.paymentMethod}<br/>
-                          <strong>Payment Status:</strong> ${order.paymentStatus === 'Paid' ? 'PAID' : 'PENDING'}
+                          <strong>Payment Status:</strong> ${order.paymentStatus.toUpperCase()}<br/>
+                          ${order.courierName ? `<strong>Courier Partner:</strong> ${order.courierName}` : ''}
                         </div>
                       </div>
                     </div>
@@ -1135,6 +1146,7 @@ export default function AdminPanel({
                             <th className="p-4 text-right">Total Amount</th>
                             <th className="p-4 text-center">Order Status</th>
                             <th className="p-4 text-center">Payment Status</th>
+                            <th className="p-4 text-center">Courier Partner</th>
                             <th className="p-4 text-center">Action Buttons</th>
                           </tr>
                         </thead>
@@ -1153,7 +1165,7 @@ export default function AdminPanel({
                               <td className="p-4 text-center">
                                 <select
                                   value={order.status}
-                                  onChange={(e) => onUpdateOrderStatus(order.id, e.target.value as Order['status'], order.paymentStatus)}
+                                  onChange={(e) => onUpdateOrderStatus(order.id, e.target.value as Order['status'], order.paymentStatus, order.courierName)}
                                   className={`text-xs font-bold px-2.5 py-1.5 rounded-lg border focus:outline-hidden bg-white cursor-pointer ${
                                     order.status === 'Delivered'
                                       ? 'border-emerald-200 text-emerald-800 bg-emerald-50'
@@ -1176,15 +1188,30 @@ export default function AdminPanel({
                               <td className="p-4 text-center">
                                 <select
                                   value={order.paymentStatus}
-                                  onChange={(e) => onUpdateOrderStatus(order.id, order.status, e.target.value as Order['paymentStatus'])}
+                                  onChange={(e) => onUpdateOrderStatus(order.id, order.status, e.target.value as Order['paymentStatus'], order.courierName)}
                                   className={`text-xs font-bold px-2.5 py-1.5 rounded-lg border focus:outline-hidden bg-white cursor-pointer ${
                                     order.paymentStatus === 'Paid'
                                       ? 'border-emerald-200 text-emerald-800 bg-emerald-50'
+                                      : order.paymentStatus === 'Waiting'
+                                      ? 'border-amber-200 text-amber-800 bg-amber-50'
                                       : 'border-red-200 text-red-800 bg-red-50'
                                   }`}
                                 >
-                                  <option value="Pending">Pending</option>
+                                  <option value="Unpaid">Unpaid</option>
                                   <option value="Paid">Paid</option>
+                                  <option value="Waiting">Waiting</option>
+                                </select>
+                              </td>
+                              <td className="p-4 text-center">
+                                <select
+                                  value={order.courierName || ''}
+                                  onChange={(e) => onUpdateOrderStatus(order.id, order.status, order.paymentStatus, e.target.value || undefined)}
+                                  className="text-xs font-bold px-2 py-1.5 rounded-lg border border-gray-200 focus:outline-hidden bg-white cursor-pointer text-gray-800"
+                                >
+                                  <option value="">Select Courier</option>
+                                  {couriers.map((c) => (
+                                    <option key={c} value={c}>{c}</option>
+                                  ))}
                                 </select>
                               </td>
                               <td className="p-4">
@@ -1321,6 +1348,52 @@ export default function AdminPanel({
                 </form>
               </div>
 
+              {/* PROMOTIONAL BANNER CONFIGURATION */}
+              <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs max-w-2xl space-y-4">
+                <div>
+                  <h3 className="font-bold text-gray-900 text-sm mb-1 flex items-center gap-2">
+                    <Megaphone className="w-4 h-4 text-amber-500" />
+                    Header Announcement Banner Message
+                  </h3>
+                  <p className="text-[10px] text-gray-400 font-sans font-medium">
+                    Configure the custom promotional banner message shown at the top of the store homepage.
+                  </p>
+                </div>
+
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const formData = new FormData(e.currentTarget);
+                    const message = (formData.get('promoMessage') as string).trim();
+                    if (message) {
+                      onUpdatePromoMessage(message);
+                    }
+                  }}
+                  className="space-y-4"
+                >
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-gray-700 block font-sans">Announcement Message</label>
+                    <textarea
+                      name="promoMessage"
+                      defaultValue={promoMessage}
+                      placeholder="🌟 Eid Special Discount! Flat 10% off on local heritage items. Use Code: EID10"
+                      className="block w-full px-3.5 py-2.5 border border-gray-200 rounded-xl bg-gray-50 text-xs focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:bg-white text-gray-850 font-semibold font-sans"
+                      rows={2}
+                      required
+                    />
+                    <p className="text-[10px] text-gray-400">Keep it short, clear and engaging (e.g., special events, discount codes, or shipping policies).</p>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="bg-indigo-600 hover:bg-indigo-700 active:scale-98 text-white font-black text-xs py-2.5 px-6 rounded-xl transition-all shadow-xs cursor-pointer inline-flex items-center gap-2 uppercase tracking-wider font-sans"
+                  >
+                    <CheckCircle className="w-4 h-4" />
+                    <span>Save Banner Message</span>
+                  </button>
+                </form>
+              </div>
+
               {/* PAYMENT CONFIGURATION */}
               <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs max-w-2xl">
                 <h3 className="font-bold text-gray-900 text-sm mb-1.5 flex items-center gap-2">
@@ -1371,6 +1444,73 @@ export default function AdminPanel({
                       <span>Update Numbers</span>
                     </button>
                   </div>
+                </form>
+              </div>
+
+              {/* COURIER PARTNERS CONFIGURATION */}
+              <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs max-w-2xl space-y-4">
+                <div>
+                  <h3 className="font-bold text-gray-900 text-sm mb-1 flex items-center gap-2">
+                    <Truck className="w-4 h-4 text-indigo-600" />
+                    Courier Shipping Partners
+                  </h3>
+                  <p className="text-[10px] text-gray-400 font-sans">Configure custom courier service options available for assignment during order processing.</p>
+                </div>
+
+                {/* Existing couriers list */}
+                <div className="flex flex-wrap gap-2">
+                  {couriers.map((courier, index) => (
+                    <div key={index} className="flex items-center gap-1.5 bg-gray-50 border border-gray-150 px-2.5 py-1.5 rounded-xl text-xs font-bold text-gray-800">
+                      <span>{courier}</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = couriers.filter((_, i) => i !== index);
+                          onUpdateCouriers(updated);
+                        }}
+                        className="text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md p-0.5 transition-all cursor-pointer"
+                        title="Remove Courier"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                  {couriers.length === 0 && (
+                    <p className="text-xs text-gray-400 italic">No couriers configured yet.</p>
+                  )}
+                </div>
+
+                {/* Add Courier form */}
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const formData = new FormData(e.currentTarget);
+                    const name = (formData.get('courierName') as string).trim();
+                    if (name) {
+                      if (couriers.some(c => c.toLowerCase() === name.toLowerCase())) {
+                        alert('This courier is already added!');
+                        return;
+                      }
+                      onUpdateCouriers([...couriers, name]);
+                      e.currentTarget.reset();
+                    }
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  <input
+                    type="text"
+                    name="courierName"
+                    placeholder="New courier name (e.g. RedX)"
+                    className="flex-1 px-3 py-2 border border-gray-200 rounded-xl bg-white text-xs focus:outline-hidden focus:ring-2 focus:ring-indigo-500 text-gray-850 font-bold"
+                    required
+                  />
+                  <button
+                    type="submit"
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs py-2 px-4 rounded-xl transition-all cursor-pointer inline-flex items-center gap-1.5 uppercase tracking-wider font-sans"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Partner</span>
+                  </button>
                 </form>
               </div>
 
@@ -1563,7 +1703,7 @@ export default function AdminPanel({
                         <span className="text-[9px] font-bold text-gray-400 uppercase">Order Status</span>
                         <select
                           value={currentInvoice.status}
-                          onChange={(e) => onUpdateOrderStatus(currentInvoice.id, e.target.value as Order['status'], currentInvoice.paymentStatus)}
+                          onChange={(e) => onUpdateOrderStatus(currentInvoice.id, e.target.value as Order['status'], currentInvoice.paymentStatus, currentInvoice.courierName)}
                           className={`text-[10px] font-bold px-2 py-0.5 rounded-md border focus:outline-hidden bg-white cursor-pointer ${
                             currentInvoice.status === 'Delivered'
                               ? 'border-emerald-200 text-emerald-800 bg-emerald-50'
@@ -1588,15 +1728,32 @@ export default function AdminPanel({
                         <span className="text-[9px] font-bold text-gray-400 uppercase">Payment Status</span>
                         <select
                           value={currentInvoice.paymentStatus}
-                          onChange={(e) => onUpdateOrderStatus(currentInvoice.id, currentInvoice.status, e.target.value as Order['paymentStatus'])}
+                          onChange={(e) => onUpdateOrderStatus(currentInvoice.id, currentInvoice.status, e.target.value as Order['paymentStatus'], currentInvoice.courierName)}
                           className={`text-[10px] font-bold px-2 py-0.5 rounded-md border focus:outline-hidden bg-white cursor-pointer ${
                             currentInvoice.paymentStatus === 'Paid'
                               ? 'border-emerald-200 text-emerald-800 bg-emerald-50'
+                              : currentInvoice.paymentStatus === 'Waiting'
+                              ? 'border-amber-200 text-amber-800 bg-amber-50'
                               : 'border-red-200 text-red-800 bg-red-50'
                           }`}
                         >
-                          <option value="Pending">Pending</option>
+                          <option value="Unpaid">Unpaid</option>
                           <option value="Paid">Paid</option>
+                          <option value="Waiting">Waiting</option>
+                        </select>
+                      </div>
+
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-[9px] font-bold text-gray-400 uppercase">Courier Partner</span>
+                        <select
+                          value={currentInvoice.courierName || ''}
+                          onChange={(e) => onUpdateOrderStatus(currentInvoice.id, currentInvoice.status, currentInvoice.paymentStatus, e.target.value || undefined)}
+                          className="text-[10px] font-bold px-2 py-0.5 rounded-md border border-gray-200 focus:outline-hidden bg-white cursor-pointer text-gray-800 font-sans"
+                        >
+                          <option value="">Select Courier</option>
+                          {couriers.map((c) => (
+                            <option key={c} value={c}>{c}</option>
+                          ))}
                         </select>
                       </div>
                     </div>
@@ -1716,7 +1873,8 @@ export default function AdminPanel({
                               <div class="info-p"><strong>Support Email:</strong> ${officeEmail}</div>
                               <div class="info-p" style="margin-top: 10px; background-color: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #f1f5f9;">
                                 <strong>Payment Method:</strong> ${currentInvoice.paymentMethod}<br/>
-                                <strong>Payment Status:</strong> ${currentInvoice.paymentStatus === 'Paid' ? 'PAID' : 'PENDING'}<br/>
+                                <strong>Payment Status:</strong> ${currentInvoice.paymentStatus.toUpperCase()}<br/>
+                                ${currentInvoice.courierName ? `<strong>Courier Partner:</strong> ${currentInvoice.courierName}<br/>` : ''}
                                 <strong>Logistics Status:</strong> ${currentInvoice.status.toUpperCase()}
                               </div>
                             </div>
@@ -1846,7 +2004,8 @@ export default function AdminPanel({
                               <div class="info-p"><strong>Support Email:</strong> ${officeEmail}</div>
                               <div class="info-p" style="margin-top: 10px; background-color: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #f1f5f9;">
                                 <strong>Payment Method:</strong> ${currentInvoice.paymentMethod}<br/>
-                                <strong>Payment Status:</strong> ${currentInvoice.paymentStatus === 'Paid' ? 'PAID' : 'PENDING'}<br/>
+                                <strong>Payment Status:</strong> ${currentInvoice.paymentStatus.toUpperCase()}<br/>
+                                ${currentInvoice.courierName ? `<strong>Courier Partner:</strong> ${currentInvoice.courierName}<br/>` : ''}
                                 <strong>Logistics Status:</strong> ${currentInvoice.status.toUpperCase()}
                               </div>
                             </div>
