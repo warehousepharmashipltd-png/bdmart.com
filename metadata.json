@@ -1,0 +1,6 @@
+{
+  "name": "BD Mart",
+  "description": "A clean, simple, and intuitive e-commerce application with a hidden admin dashboard for product management and inventory control.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
