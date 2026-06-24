@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-export type Category = 'Electronics' | 'Apparel' | 'Groceries' | 'Home & Living' | 'Cosmetics';
+export type Category = string;
 
 export interface Product {
   id: string;

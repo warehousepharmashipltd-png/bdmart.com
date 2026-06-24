@@ -90,6 +90,10 @@ export default function App() {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   // --- Office Settings States ---
+  const [categoriesList, setCategoriesList] = useState<Category[]>(() => {
+    const saved = localStorage.getItem('bdmart_categories_list');
+    return saved ? JSON.parse(saved) : ['Electronics', 'Apparel', 'Groceries', 'Home & Living', 'Cosmetics'];
+  });
   const [promoMessage, setPromoMessage] = useState<string>(() => {
     return localStorage.getItem('bdmart_promo_message') || '🌟 Eid Special Discount! Flat 10% off on local heritage items. Use Code: EID10';
   });
@@ -431,6 +435,7 @@ export default function App() {
             addToast(`🌓 Switched to ${!isDarkMode ? 'Dark' : 'Light'} Mode`, 'info');
           }}
           promoMessage={promoMessage}
+          categoriesList={categoriesList}
         />
       )}
 
@@ -480,6 +485,12 @@ export default function App() {
               setPromoMessage(msg);
               localStorage.setItem('bdmart_promo_message', msg);
               addToast('📢 Announcement banner message updated!', 'success');
+            }}
+            categoriesList={categoriesList}
+            onUpdateCategories={(cats) => {
+              setCategoriesList(cats);
+              localStorage.setItem('bdmart_categories_list', JSON.stringify(cats));
+              addToast('📁 Category Departments updated successfully!', 'success');
             }}
           />
         </main>
@@ -638,9 +649,13 @@ export default function App() {
             <h4 className="text-xs font-bold text-gray-200 uppercase tracking-wider">Shopping Information</h4>
             <ul className="text-xs space-y-2">
               <li><button onClick={() => setSelectedCategory('All')} className="hover:text-amber-400 transition-colors cursor-pointer text-left">Browse All Collections</button></li>
-              <li><button onClick={() => setSelectedCategory('Electronics')} className="hover:text-amber-400 transition-colors cursor-pointer text-left">Electronics</button></li>
-              <li><button onClick={() => setSelectedCategory('Apparel')} className="hover:text-amber-400 transition-colors cursor-pointer text-left">Handwoven Apparel</button></li>
-              <li><button onClick={() => setSelectedCategory('Groceries')} className="hover:text-amber-400 transition-colors cursor-pointer text-left">Sunderban Organic Groceries</button></li>
+              {categoriesList.slice(0, 4).map(cat => (
+                <li key={cat}>
+                  <button onClick={() => setSelectedCategory(cat)} className="hover:text-amber-400 transition-colors cursor-pointer text-left">
+                    {cat}
+                  </button>
+                </li>
+              ))}
             </ul>
           </div>
 

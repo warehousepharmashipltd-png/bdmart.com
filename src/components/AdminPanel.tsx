@@ -54,11 +54,13 @@ interface AdminPanelProps {
   adminAccounts: AdminAccount[];
   couriers: string[];
   promoMessage: string;
+  categoriesList: Category[];
   onUpdateOfficeContact: (address: string, phone: string, email: string) => void;
   onUpdatePaymentNumbers: (bkash: string, nagad: string) => void;
   onUpdateAdminAccounts: (accounts: AdminAccount[]) => void;
   onUpdateCouriers: (couriers: string[]) => void;
   onUpdatePromoMessage: (message: string) => void;
+  onUpdateCategories: (categories: Category[]) => void;
 }
 
 export default function AdminPanel({
@@ -79,11 +81,13 @@ export default function AdminPanel({
   adminAccounts,
   couriers,
   promoMessage,
+  categoriesList,
   onUpdateOfficeContact,
   onUpdatePaymentNumbers,
   onUpdateAdminAccounts,
   onUpdateCouriers,
-  onUpdatePromoMessage
+  onUpdatePromoMessage,
+  onUpdateCategories
 }: AdminPanelProps) {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'inventory' | 'orders' | 'invoices' | 'settings'>('dashboard');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -100,7 +104,7 @@ export default function AdminPanel({
 
   // Form states for Add/Edit
   const [formName, setFormName] = useState('');
-  const [formCategory, setFormCategory] = useState<Category>('Electronics');
+  const [formCategory, setFormCategory] = useState<Category>(categoriesList[0] || 'Electronics');
   const [formPrice, setFormPrice] = useState<number>(0);
   const [formDiscountPrice, setFormDiscountPrice] = useState<number | ''>('');
   const [formStock, setFormStock] = useState<number>(0);
@@ -239,7 +243,7 @@ export default function AdminPanel({
   const handleAddNewClick = () => {
     setEditingProduct(null);
     setFormName('');
-    setFormCategory('Electronics');
+    setFormCategory(categoriesList[0] || 'Electronics');
     setFormPrice(100);
     setFormDiscountPrice('');
     setFormStock(10);
@@ -496,11 +500,9 @@ export default function AdminPanel({
                         onChange={(e) => setFormCategory(e.target.value as Category)}
                         className="w-full px-3 py-2 border border-gray-200 rounded-xl text-xs focus:ring-1 focus:ring-indigo-600 text-gray-800 bg-white"
                       >
-                        <option value="Electronics">Electronics</option>
-                        <option value="Apparel">Apparel</option>
-                        <option value="Groceries">Groceries</option>
-                        <option value="Home & Living">Home & Living</option>
-                        <option value="Cosmetics">Cosmetics</option>
+                        {categoriesList.map(cat => (
+                          <option key={cat} value={cat}>{cat}</option>
+                        ))}
                       </select>
                     </div>
                   </div>
@@ -1510,6 +1512,77 @@ export default function AdminPanel({
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Add Partner</span>
+                  </button>
+                </form>
+              </div>
+
+              {/* CATEGORY DEPARTMENTS CONFIGURATION */}
+              <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs max-w-2xl space-y-4">
+                <div>
+                  <h3 className="font-bold text-gray-900 text-sm mb-1 flex items-center gap-2">
+                    <FolderPlus className="w-4 h-4 text-indigo-600" />
+                    Category Departments
+                  </h3>
+                  <p className="text-[10px] text-gray-400 font-sans font-medium">Configure custom category departments available for product classification and storefront navigation.</p>
+                </div>
+
+                {/* Existing categories list */}
+                <div className="flex flex-wrap gap-2">
+                  {categoriesList.map((category, index) => (
+                    <div key={index} className="flex items-center gap-1.5 bg-gray-50 border border-gray-150 px-2.5 py-1.5 rounded-xl text-xs font-bold text-gray-800">
+                      <span>{category}</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (categoriesList.length <= 1) {
+                            alert('You must have at least one category department!');
+                            return;
+                          }
+                          const updated = categoriesList.filter((_, i) => i !== index);
+                          onUpdateCategories(updated);
+                        }}
+                        className="text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md p-0.5 transition-all cursor-pointer"
+                        title="Remove Category"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                  {categoriesList.length === 0 && (
+                    <p className="text-xs text-gray-400 italic">No categories configured yet.</p>
+                  )}
+                </div>
+
+                {/* Add Category form */}
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const formData = new FormData(e.currentTarget);
+                    const name = (formData.get('categoryName') as string).trim();
+                    if (name) {
+                      if (categoriesList.some(c => c.toLowerCase() === name.toLowerCase())) {
+                        alert('This category is already added!');
+                        return;
+                      }
+                      onUpdateCategories([...categoriesList, name]);
+                      e.currentTarget.reset();
+                    }
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  <input
+                    type="text"
+                    name="categoryName"
+                    placeholder="New category name (e.g. Organic Foods)"
+                    className="flex-1 px-3 py-2 border border-gray-200 rounded-xl bg-white text-xs focus:outline-hidden focus:ring-2 focus:ring-indigo-500 text-gray-850 font-bold"
+                    required
+                  />
+                  <button
+                    type="submit"
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs py-2 px-4 rounded-xl transition-all cursor-pointer inline-flex items-center gap-1.5 uppercase tracking-wider font-sans"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Category</span>
                   </button>
                 </form>
               </div>

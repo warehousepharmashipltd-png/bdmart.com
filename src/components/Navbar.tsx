@@ -20,6 +20,7 @@ interface NavbarProps {
   isDarkMode: boolean;
   onThemeToggle: () => void;
   promoMessage: string;
+  categoriesList: Category[];
 }
 
 export default function Navbar({
@@ -34,10 +35,11 @@ export default function Navbar({
   ordersCount,
   isDarkMode,
   onThemeToggle,
-  promoMessage
+  promoMessage,
+  categoriesList
 }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const categories: (Category | 'All')[] = ['All', 'Electronics', 'Apparel', 'Groceries', 'Home & Living', 'Cosmetics'];
+  const categories: (Category | 'All')[] = ['All', ...categoriesList];
 
   return (
     <header id="main-header" className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-xs">
